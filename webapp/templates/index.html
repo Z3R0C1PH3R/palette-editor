@@ -19,18 +19,18 @@
                 </div>
                 <div class="slider-container">
                     <label for="hueSpread">Hue Spread:</label>
-                    <input type="range" id="hueSpread" min="-1" max="1" step="0.01" value="0.5">
-                    <span id="hueSpreadValue">0.5</span>
+                    <input type="range" id="hueSpread" min="0" max="1" step="0.01" value="0.3">
+                    <span id="hueSpreadValue">30%</span>
                 </div>
                 <div class="slider-container">
                     <label for="sSpread">S Spread:</label>
-                    <input type="range" id="sSpread" min="-1" max="1" step="0.01" value="0.5">
-                    <span id="sSpreadValue">0.5</span>
+                    <input type="range" id="sSpread" min="0" max="1" step="0.01" value="0.6">
+                    <span id="sSpreadValue">60%</span>
                 </div>
                 <div class="slider-container">
                     <label for="lSpread">L Spread:</label>
-                    <input type="range" id="lSpread" min="-1" max="1" step="0.01" value="0.5">
-                    <span id="lSpreadValue">0.5</span>
+                    <input type="range" id="lSpread" min="0" max="1" step="0.01" value="0.6">
+                    <span id="lSpreadValue">60%</span>
                 </div>
             </div>
             <button id="randomizePalette">Randomize Palette</button>
@@ -45,9 +45,21 @@
         <div class="image-upload-section">
             <input type="file" id="imageUpload" accept="image/*">
             <div class="slider-container">
-                <label for="ditheringSpread">Dithering Spread (s):</label>
-                <input type="range" id="ditheringSpread" min="0" max="1" step="0.01" value="0.5">
-                <span id="ditheringSpreadValue">0.5</span>
+                <label for="imageResize">Output Image Size (%):</label>
+                <input type="range" id="imageResize" min="1" max="100" step="1" value="100">
+                <span id="imageResizeValue">100%</span>
+                <select id="interpolationMethod">
+                    <option value="INTER_NEAREST">Nearest</option>
+                    <option value="INTER_LINEAR">Linear</option>
+                    <option value="INTER_AREA" selected>Area</option>
+                    <option value="INTER_CUBIC">Cubic</option>
+                    <option value="INTER_LANCZOS4">Lanczos4</option>
+                </select>
+            </div>
+            <div class="slider-container">
+                <label for="ditheringSpread">Dithering Spread:</label>
+                <input type="range" id="ditheringSpread" min="0" max="1" step="0.01" value="0.2">
+                <span id="ditheringSpreadValue">20%</span>
             </div>
             <button id="applyPalette" disabled>Apply Palette to Image</button>
             <button id="downloadImage" disabled>Download Edited Image</button>
@@ -65,7 +77,10 @@
             </div>
         </div>
     </div>
-
+    <div id="loadingSpinner" class="loading-spinner" style="display: none;">
+        <div class="spinner"></div>
+        <p>Processing image...</p>
+    </div>
     <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>

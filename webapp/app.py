@@ -3,6 +3,7 @@ import cv2
 import numpy as np
 import base64
 import palette_generator
+from time import perf_counter
 
 app = Flask(__name__)
 
@@ -12,6 +13,14 @@ BAYER8 = [[ 0, 8, 2,10],
           [ 3,11, 1, 9],
           [15, 7,13, 5]]
 
+INTERPOLATION_METHODS = {
+    'INTER_NEAREST': cv2.INTER_NEAREST,
+    'INTER_LINEAR': cv2.INTER_LINEAR,
+    'INTER_AREA': cv2.INTER_AREA,
+    'INTER_CUBIC': cv2.INTER_CUBIC,
+    'INTER_LANCZOS4': cv2.INTER_LANCZOS4
+}
+
 def palette_downsize(img, n=PALETTE_SIZE, palette=None):
     if not palette:
         return np.floor(img*(n-1)+0.5)/(n-1)
@@ -19,9 +28,13 @@ def palette_downsize(img, n=PALETTE_SIZE, palette=None):
         return palette[np.minimum(np.floor(img*(n-1)+0.5).astype(int), n-1)]
 
 def ordered_dithering(img, palette_size=PALETTE_SIZE, s=0.2, map=BAYER8, palette=None):
-    new_img = np.zeros(img.shape) if not palette else np.zeros(img.shape+(3,))
+    if palette:
+        new_img = np.zeros(img.shape+(3,))
+    else:
+        new_img = np.zeros(img.shape)
+
     n = len(map)
-    w, h = img.shape[1], img.shape[0]
+    h, w = img.shape[:2]
     for i in range(h):
         for j in range(w):
             new_img[i,j] = palette_downsize(img[i,j] + s*(map[i%n][j%n]/n**2 - 0.5), palette_size, palette=palette)
@@ -99,6 +112,14 @@ def apply_palette():
     img_array = np.frombuffer(img_data, np.uint8)
     img = cv2.imdecode(img_array, cv2.IMREAD_COLOR)
     
+    # Resize the image
+    resize_factor = slider_values['imageResize'] / 100
+    if resize_factor != 1:
+        new_width = int(img.shape[1] * resize_factor)
+        new_height = int(img.shape[0] * resize_factor)
+        interpolation_method = INTERPOLATION_METHODS.get(slider_values['interpolationMethod'], cv2.INTER_AREA)
+        img = cv2.resize(img, (new_width, new_height), interpolation=interpolation_method)
+    
     # Convert image to grayscale and normalize
     img_gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY) / 255.0
     
@@ -106,6 +127,7 @@ def apply_palette():
     palette = [tuple(int(h.lstrip('#')[i:i+2], 16) for i in (0, 2, 4)) for h in palette_hex]
     palette = list(np.array(palette) / 255.0)
     
+    t1 = perf_counter()
     # Apply dithering
     dithered = ordered_dithering(
         img_gray, 
@@ -113,7 +135,7 @@ def apply_palette():
         s=slider_values['ditheringSpread'],
         palette=palette
     )
-    
+    print("TIME:", perf_counter()-t1)
     # Convert back to uint8 and BGR color space
     result = (dithered * 255).astype(np.uint8)
     result_bgr = cv2.cvtColor(result, cv2.COLOR_RGB2BGR)

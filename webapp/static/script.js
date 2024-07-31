@@ -16,11 +16,14 @@ document.addEventListener('DOMContentLoaded', function() {
         hueSpread: document.getElementById('hueSpread'),
         sSpread: document.getElementById('sSpread'),
         lSpread: document.getElementById('lSpread'),
-        colorCount: document.getElementById('colorCount')
+        colorCount: document.getElementById('colorCount'),
+        imageResize: document.getElementById('imageResize'),
+        interpolationMethod: document.getElementById('interpolationMethod')
     };
 
     let currentPalette = [];
     let currentImageData = null;
+    let isProcessing = false;
 
     randomizePaletteBtn.addEventListener('click', function() {
         const sliderValues = getSliderValues();
@@ -86,11 +89,20 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     applyPaletteBtn.addEventListener('click', function() {
+        if (isProcessing) {
+            console.log('Processing in progress, please wait...');
+            return;
+        }
+    
         if (!currentImageData || currentPalette.length === 0) {
             alert('Please upload an image and generate a palette first.');
             return;
         }
-
+    
+        isProcessing = true;
+        applyPaletteBtn.disabled = true;
+        document.getElementById('loadingSpinner').style.display = 'flex';
+    
         fetch('/apply_palette', {
             method: 'POST',
             headers: {
@@ -107,7 +119,15 @@ document.addEventListener('DOMContentLoaded', function() {
             editedImage.src = data.editedImage;
             downloadImageBtn.disabled = false;
         })
-        .catch(error => console.error('Error:', error));
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while processing the image.');
+        })
+        .finally(() => {
+            isProcessing = false;
+            applyPaletteBtn.disabled = false;
+            document.getElementById('loadingSpinner').style.display = 'none';
+        });
     });
 
     downloadImageBtn.addEventListener('click', function() {
@@ -133,16 +153,21 @@ document.addEventListener('DOMContentLoaded', function() {
         imageUpload.value = '';
         
         // Reset sliders
-        for (let sliderId in sliders) {
-            const slider = sliders[sliderId];
-            if (sliderId === 'colorCount') {
-                slider.value = 8;
-            } else {
-                slider.value = 0.3;
-            }
-            const valueDisplay = document.getElementById(`${sliderId}Value`);
-            valueDisplay.textContent = slider.value;
-        }
+        sliders.colorCount.value = 8;
+        sliders.hueSpread.value = 0.3;
+        sliders.sSpread.value = 0.6;
+        sliders.lSpread.value = 0.6;
+        sliders.ditheringSpread.value = 0.2;
+        sliders.imageResize.value = 100;
+        sliders.interpolationMethod.value = 'INTER_AREA';
+    
+        // Update value displays
+        document.getElementById('colorCountValue').textContent = '8';
+        document.getElementById('hueSpreadValue').textContent = '30%';
+        document.getElementById('sSpreadValue').textContent = '60%';
+        document.getElementById('lSpreadValue').textContent = '60%';
+        document.getElementById('ditheringSpreadValue').textContent = '20%';
+        document.getElementById('imageResizeValue').textContent = '100%';
     }
 
     // Call resetAll when the page loads
@@ -165,7 +190,9 @@ document.addEventListener('DOMContentLoaded', function() {
             hueSpread: parseFloat(sliders.hueSpread.value),
             sSpread: parseFloat(sliders.sSpread.value),
             lSpread: parseFloat(sliders.lSpread.value),
-            colorCount: parseInt(sliders.colorCount.value)
+            colorCount: parseInt(sliders.colorCount.value),
+            imageResize: parseInt(sliders.imageResize.value),
+            interpolationMethod: sliders.interpolationMethod.value
         };
     }
 
@@ -173,8 +200,16 @@ document.addEventListener('DOMContentLoaded', function() {
     for (let sliderId in sliders) {
         const slider = sliders[sliderId];
         const valueDisplay = document.getElementById(`${sliderId}Value`);
-        slider.addEventListener('input', function() {
-            valueDisplay.textContent = this.value;
-        });
+        if (slider.type === 'range') {
+            slider.addEventListener('input', function() {
+                if (['hueSpread', 'sSpread', 'lSpread', 'ditheringSpread'].includes(sliderId)) {
+                    valueDisplay.textContent = `${(this.value * 100).toFixed(0)}%`;
+                } else if (sliderId === 'imageResize') {
+                    valueDisplay.textContent = `${this.value}%`;
+                } else {
+                    valueDisplay.textContent = this.value;
+                }
+            });
+        }
     }
 });
