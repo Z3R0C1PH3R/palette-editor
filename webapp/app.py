@@ -21,6 +21,8 @@ INTERPOLATION_METHODS = {
     'INTER_LANCZOS4': cv2.INTER_LANCZOS4
 }
 
+
+
 def palette_downsize(img, n=PALETTE_SIZE, palette=None):
     if not palette:
         return np.floor(img*(n-1)+0.5)/(n-1)
@@ -136,8 +138,24 @@ def apply_palette():
         palette=palette
     )
     print("TIME:", perf_counter()-t1)
+
+    # Apply bloom effect
+    bloom_radius = slider_values.get('bloomRadius', 0.1) * min(img.shape[:2])/10
+    bloom_threshold = slider_values.get('bloomThreshold', 0.9)
+    bloom_amount = slider_values.get('bloomAmount', 0.3)
+
+    # Calculate kernel size for Gaussian blur (must be odd)
+    kernel_size = max(1, int(bloom_radius)*2+1)  # Ensure at least 1
+
+    blur = cv2.GaussianBlur(
+        np.where(img_gray[..., None] > bloom_threshold, dithered, 0),
+        (0,0), kernel_size, kernel_size
+    )
+
+    result = np.clip(dithered + blur * bloom_amount, 0, 1)
+    
     # Convert back to uint8 and BGR color space
-    result = (dithered * 255).astype(np.uint8)
+    result = (result * 255).astype(np.uint8)
     result_bgr = cv2.cvtColor(result, cv2.COLOR_RGB2BGR)
     
     # Encode the result image

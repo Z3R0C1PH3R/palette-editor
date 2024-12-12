@@ -18,7 +18,10 @@ document.addEventListener('DOMContentLoaded', function() {
         lSpread: document.getElementById('lSpread'),
         colorCount: document.getElementById('colorCount'),
         imageResize: document.getElementById('imageResize'),
-        interpolationMethod: document.getElementById('interpolationMethod')
+        interpolationMethod: document.getElementById('interpolationMethod'),
+        bloomRadius: document.getElementById('bloomRadius'),
+        bloomThreshold: document.getElementById('bloomThreshold'),
+        bloomAmount: document.getElementById('bloomAmount')
     };
 
     let currentPalette = [];
@@ -160,6 +163,9 @@ document.addEventListener('DOMContentLoaded', function() {
         sliders.ditheringSpread.value = 0.2;
         sliders.imageResize.value = 100;
         sliders.interpolationMethod.value = 'INTER_AREA';
+        sliders.bloomRadius.value = 0.1;
+        sliders.bloomThreshold.value = 0.9;
+        sliders.bloomAmount.value = 0.3;
     
         // Update value displays
         document.getElementById('colorCountValue').textContent = '8';
@@ -168,6 +174,9 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('lSpreadValue').textContent = '60%';
         document.getElementById('ditheringSpreadValue').textContent = '20%';
         document.getElementById('imageResizeValue').textContent = '100%';
+        document.getElementById('bloomRadiusValue').textContent = '10%';
+        document.getElementById('bloomThresholdValue').textContent = '90%';
+        document.getElementById('bloomAmountValue').textContent = '30%';
     }
 
     // Call resetAll when the page loads
@@ -192,7 +201,10 @@ document.addEventListener('DOMContentLoaded', function() {
             lSpread: parseFloat(sliders.lSpread.value),
             colorCount: parseInt(sliders.colorCount.value),
             imageResize: parseInt(sliders.imageResize.value),
-            interpolationMethod: sliders.interpolationMethod.value
+            interpolationMethod: sliders.interpolationMethod.value,
+            bloomRadius: parseFloat(sliders.bloomRadius.value),
+            bloomThreshold: parseFloat(sliders.bloomThreshold.value),
+            bloomAmount: parseFloat(sliders.bloomAmount.value)
         };
     }
 
