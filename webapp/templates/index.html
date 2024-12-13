@@ -3,98 +3,143 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Z3's Image Palette Editor</title>
+    <title>Z3's Image Stylizer</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-    <div class="container">
-        <h1>Image Palette Editor</h1>
-        
-        <div class="palette-section">
-            <div class="sliders-section">
-                <div class="slider-container">
-                    <label for="colorCount">Number of Colors:</label>
-                    <input type="range" id="colorCount" min="2" max="16" step="1" value="8">
-                    <span id="colorCountValue">8</span>
+    <div class="app-container">
+        <div class="main-content">
+            <div class="container">
+                <div class="controls-grid">
+                    <div class="control-group title-group">
+                        <h1>Image Stylizer</h1>
+                    </div>
+                    <!-- Palette Controls -->
+                    <div class="control-group palette-controls">
+                        <h3>Palette Settings</h3>
+                        <div class="sliders-section">
+                            <div class="slider-container">
+                                <label for="colorCount">Number of Colors:</label>
+                                <input type="range" id="colorCount" min="2" max="16" step="1" value="8">
+                                <span id="colorCountValue">8</span>
+                            </div>
+                            <div class="slider-container">
+                                <label for="hueSpread">Hue Spread:</label>
+                                <input type="range" id="hueSpread" min="0" max="1" step="0.01" value="0.3">
+                                <span id="hueSpreadValue">30%</span>
+                            </div>
+                            <div class="slider-container">
+                                <label for="sSpread">S Spread:</label>
+                                <input type="range" id="sSpread" min="0" max="1" step="0.01" value="0.6">
+                                <span id="sSpreadValue">60%</span>
+                            </div>
+                            <div class="slider-container">
+                                <label for="lSpread">L Spread:</label>
+                                <input type="range" id="lSpread" min="0" max="1" step="0.01" value="0.6">
+                                <span id="lSpreadValue">60%</span>
+                            </div>
+                        </div>
+                        <button id="randomizePalette">Randomize Palette</button>
+                        <div id="paletteDisplay"></div>
+                        <div class="palette-actions">
+                            <textarea id="customPalette" placeholder="Enter custom palette (comma-separated hex values)" rows="3"></textarea>
+                            <button id="copyPalette">Copy Palette</button>
+                            <button id="applyCustomPalette">Apply Custom Palette</button>
+                        </div>
+                    </div>
+
+                    <!-- Image Input -->
+                    <div class="control-group image-input">
+                        <h3>Image Input</h3>
+                        <input type="file" id="imageUpload" accept="image/*">
+                        <div class="preview-container">
+                            <img id="previewImage" src="" alt="Preview">
+                        </div>
+                    </div>
+
+                    <!-- Result Settings -->
+                    <div class="control-group result-controls">
+                        <h3>Result Settings</h3>
+                        <div class="sliders-section">
+                            <div class="slider-container">
+                                <label for="imageResize">Output Size (%):</label>
+                                <input type="range" id="imageResize" min="1" max="100" step="1" value="100">
+                                <span id="imageResizeValue">100%</span>
+                            </div>
+                            <div class="slider-container">
+                                <label for="interpolationMethod">Interpolation:</label>
+                                <select id="interpolationMethod">
+                                    <option value="INTER_NEAREST">Nearest</option>
+                                    <option value="INTER_LINEAR">Linear</option>
+                                    <option value="INTER_AREA" selected>Area</option>
+                                    <option value="INTER_CUBIC">Cubic</option>
+                                    <option value="INTER_LANCZOS4">Lanczos4</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="action-buttons">
+                            <button id="applyPalette" disabled>Apply Palette</button>
+                            <button id="resetAll">Reset All</button>
+                        </div>
+                    </div>
+
+                    <!-- Effect Controls -->
+                    <div class="control-group effect-controls">
+                        <h3>Effect Settings</h3>
+                        <div class="sliders-section">
+                            <div class="slider-container">
+                                <label for="ditheringSpread">Dithering Spread:</label>
+                                <input type="range" id="ditheringSpread" min="0" max="1" step="0.01" value="0.2">
+                                <span id="ditheringSpreadValue">20%</span>
+                            </div>
+                            <div class="slider-container">
+                                <label for="bloomRadius">Bloom Radius:</label>
+                                <input type="range" id="bloomRadius" min="0" max="1" step="0.01" value="0.1">
+                                <span id="bloomRadiusValue">10%</span>
+                            </div>
+                            <div class="slider-container">
+                                <label for="bloomThreshold">Bloom Threshold:</label>
+                                <input type="range" id="bloomThreshold" min="0" max="1" step="0.01" value="0.9">
+                                <span id="bloomThresholdValue">90%</span>
+                            </div>
+                            <div class="slider-container">
+                                <label for="bloomAmount">Bloom Amount:</label>
+                                <input type="range" id="bloomAmount" min="0" max="1" step="0.01" value="0.3">
+                                <span id="bloomAmountValue">30%</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="slider-container">
-                    <label for="hueSpread">Hue Spread:</label>
-                    <input type="range" id="hueSpread" min="0" max="1" step="0.01" value="0.3">
-                    <span id="hueSpreadValue">30%</span>
-                </div>
-                <div class="slider-container">
-                    <label for="sSpread">S Spread:</label>
-                    <input type="range" id="sSpread" min="0" max="1" step="0.01" value="0.6">
-                    <span id="sSpreadValue">60%</span>
-                </div>
-                <div class="slider-container">
-                    <label for="lSpread">L Spread:</label>
-                    <input type="range" id="lSpread" min="0" max="1" step="0.01" value="0.6">
-                    <span id="lSpreadValue">60%</span>
-                </div>
-            </div>
-            <button id="randomizePalette">Randomize Palette</button>
-            <div id="paletteDisplay"></div>
-            <div class="palette-actions">
-                <button id="copyPalette">Copy Palette</button>
-                <input type="text" id="customPalette" placeholder="Enter custom palette (comma-separated hex values)">
-                <button id="applyCustomPalette">Apply Custom Palette</button>
             </div>
         </div>
 
-        <div class="image-upload-section">
-            <input type="file" id="imageUpload" accept="image/*">
-            <div class="slider-container">
-                <label for="imageResize">Output Image Size (%):</label>
-                <input type="range" id="imageResize" min="1" max="100" step="1" value="100">
-                <span id="imageResizeValue">100%</span>
-                <select id="interpolationMethod">
-                    <option value="INTER_NEAREST">Nearest</option>
-                    <option value="INTER_LINEAR">Linear</option>
-                    <option value="INTER_AREA" selected>Area</option>
-                    <option value="INTER_CUBIC">Cubic</option>
-                    <option value="INTER_LANCZOS4">Lanczos4</option>
-                </select>
-            </div>
-            <div class="slider-container">
-                <label for="ditheringSpread">Dithering Spread:</label>
-                <input type="range" id="ditheringSpread" min="0" max="1" step="0.01" value="0.2">
-                <span id="ditheringSpreadValue">20%</span>
-            </div>
-            <div class="slider-container">
-                <label for="bloomRadius">Bloom Radius:</label>
-                <input type="range" id="bloomRadius" min="0" max="1" step="0.01" value="0.1">
-                <span id="bloomRadiusValue">10%</span>
-            </div>
-            <div class="slider-container">
-                <label for="bloomThreshold">Bloom Threshold:</label>
-                <input type="range" id="bloomThreshold" min="0" max="1" step="0.01" value="0.9">
-                <span id="bloomThresholdValue">90%</span>
-            </div>
-            <div class="slider-container">
-                <label for="bloomAmount">Bloom Amount:</label>
-                <input type="range" id="bloomAmount" min="0" max="1" step="0.01" value="0.3">
-                <span id="bloomAmountValue">30%</span>
-            </div>
-            <button id="applyPalette" disabled>Apply Palette to Image</button>
-            <button id="downloadImage" disabled>Download Edited Image</button>
-            <button id="resetAll">Reset All</button>
-        </div>
-
-        <div class="image-display">
-            <div class="image-container">
-                <h3>Original Image</h3>
-                <img id="originalImage" src="" alt="Original Image">
-            </div>
-            <div class="image-container">
-                <h3>Edited Image</h3>
-                <img id="editedImage" src="" alt="Edited Image">
+        <div class="gallery-sidebar">
+            <h2>Output Gallery</h2>
+            <div class="image-history">
+                <div class="image-pair current-image">
+                    <h3>Current Output</h3>
+                    <div class="image-container">
+                        <img id="editedImage" src="" alt="Edited Image">
+                        <div class="loading-overlay">
+                            <div class="spinner"></div>
+                            <p>Processing...</p>
+                        </div>
+                        <div class="image-actions">
+                            <button id="downloadImage" disabled title="Download">
+                                <i class="fas fa-download"></i>
+                            </button>
+                            <button id="viewImage" class="view-btn" disabled title="View">
+                                <i class="fas fa-expand"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="previous-images">
+                    <!-- Previous images will be added here dynamically -->
+                </div>
             </div>
         </div>
-    </div>
-    <div id="loadingSpinner" class="loading-spinner" style="display: none;">
-        <div class="spinner"></div>
-        <p>Processing image...</p>
     </div>
     <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>

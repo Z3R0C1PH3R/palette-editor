@@ -10,6 +10,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const applyCustomPaletteBtn = document.getElementById('applyCustomPalette');
     const downloadImageBtn = document.getElementById('downloadImage');
     const resetAllBtn = document.getElementById('resetAll');
+    const viewImageBtn = document.getElementById('viewImage');
 
     const sliders = {
         ditheringSpread: document.getElementById('ditheringSpread'),
@@ -43,6 +44,7 @@ document.addEventListener('DOMContentLoaded', function() {
             console.log("Received palette:", data.palette);
             currentPalette = data.palette;
             displayPalette(currentPalette);
+            customPaletteInput.value = currentPalette.join(',');
         })
         .catch(error => console.error('Error:', error));
     });
@@ -66,6 +68,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
+    // Update image upload handler
     imageUpload.addEventListener('change', function(e) {
         const file = e.target.files[0];
         if (file) {
@@ -80,10 +83,10 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(data => {
                 if (data.error) {
                     alert(data.error);
-                    imageUpload.value = ''; // Reset the file input
+                    imageUpload.value = '';
                 } else {
                     currentImageData = 'data:image/png;base64,' + data.image;
-                    originalImage.src = currentImageData;
+                    document.getElementById('previewImage').src = currentImageData;
                     applyPaletteBtn.disabled = false;
                 }
             })
@@ -91,6 +94,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
+    // Update applyPalette handler
     applyPaletteBtn.addEventListener('click', function() {
         if (isProcessing) {
             console.log('Processing in progress, please wait...');
@@ -104,7 +108,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
         isProcessing = true;
         applyPaletteBtn.disabled = true;
-        document.getElementById('loadingSpinner').style.display = 'flex';
+        document.querySelector('.loading-overlay').classList.add('active');
     
         fetch('/apply_palette', {
             method: 'POST',
@@ -119,8 +123,12 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .then(response => response.json())
         .then(data => {
-            editedImage.src = data.editedImage;
-            downloadImageBtn.disabled = false;
+            const prevEditedImage = document.getElementById('editedImage').src;
+            if (prevEditedImage && prevEditedImage !== '') {
+                addToImageHistory(prevEditedImage);
+            }
+            document.getElementById('editedImage').src = data.editedImage;
+            updateImageButtons(true);
         })
         .catch(error => {
             console.error('Error:', error);
@@ -129,7 +137,7 @@ document.addEventListener('DOMContentLoaded', function() {
         .finally(() => {
             isProcessing = false;
             applyPaletteBtn.disabled = false;
-            document.getElementById('loadingSpinner').style.display = 'none';
+            document.querySelector('.loading-overlay').classList.remove('active');
         });
     });
 
@@ -142,42 +150,88 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    resetAllBtn.addEventListener('click', resetAll);
+    viewImageBtn.addEventListener('click', function() {
+        if (editedImage.src) {
+            window.open(editedImage.src, '_blank');
+        }
+    });
 
+    resetAllBtn.addEventListener('click', () => {
+        try {
+            resetAll();
+        } catch (error) {
+            console.warn('Reset warning:', error);
+            // Continue execution even if there's an error
+        }
+    });
+
+    // Get all slider elements and their value displays
+    const colorCountSlider = document.getElementById('colorCount');
+    const colorCountValue = document.getElementById('colorCountValue');
+    const hueSpreadSlider = document.getElementById('hueSpread');
+    const hueSpreadValue = document.getElementById('hueSpreadValue');
+    const sSpreadSlider = document.getElementById('sSpread');
+    const sSpreadValue = document.getElementById('sSpreadValue');
+    const lSpreadSlider = document.getElementById('lSpread');
+    const lSpreadValue = document.getElementById('lSpreadValue');
+    const imageResizeSlider = document.getElementById('imageResize');
+    const imageResizeValue = document.getElementById('imageResizeValue');
+    const ditheringSpreadSlider = document.getElementById('ditheringSpread');
+    const ditheringSpreadValue = document.getElementById('ditheringSpreadValue');
+    const bloomRadiusSlider = document.getElementById('bloomRadius');
+    const bloomRadiusValue = document.getElementById('bloomRadiusValue');
+    const bloomThresholdSlider = document.getElementById('bloomThreshold');
+    const bloomThresholdValue = document.getElementById('bloomThresholdValue');
+    const bloomAmountSlider = document.getElementById('bloomAmount');
+    const bloomAmountValue = document.getElementById('bloomAmountValue');
+    const interpolationMethodSelect = document.getElementById('interpolationMethod');
+    const applyPaletteButton = document.getElementById('applyPalette');
+    const downloadButton = document.getElementById('downloadImage');
+
+    // Update reset function to clear preview
     function resetAll() {
-        currentPalette = [];
-        currentImageData = null;
-        paletteDisplay.innerHTML = '';
-        originalImage.src = '';
-        editedImage.src = '';
-        customPaletteInput.value = '';
-        applyPaletteBtn.disabled = true;
-        downloadImageBtn.disabled = true;
-        imageUpload.value = '';
+        // Reset all slider values to defaults
+        if (colorCountSlider) colorCountSlider.value = '8';
+        if (colorCountValue) colorCountValue.textContent = '8';
+        if (hueSpreadSlider) hueSpreadSlider.value = '0.3';
+        if (hueSpreadValue) hueSpreadValue.textContent = '30%';
+        if (sSpreadSlider) sSpreadSlider.value = '0.6';
+        if (sSpreadValue) sSpreadValue.textContent = '60%';
+        if (lSpreadSlider) lSpreadSlider.value = '0.6';
+        if (lSpreadValue) lSpreadValue.textContent = '60%';
+        if (imageResizeSlider) imageResizeSlider.value = '100';
+        if (imageResizeValue) imageResizeValue.textContent = '100%';
+        if (ditheringSpreadSlider) ditheringSpreadSlider.value = '0.2';
+        if (ditheringSpreadValue) ditheringSpreadValue.textContent = '20%';
+        if (bloomRadiusSlider) bloomRadiusSlider.value = '0.1';
+        if (bloomRadiusValue) bloomRadiusValue.textContent = '10%';
+        if (bloomThresholdSlider) bloomThresholdSlider.value = '0.9';
+        if (bloomThresholdValue) bloomThresholdValue.textContent = '90%';
+        if (bloomAmountSlider) bloomAmountSlider.value = '0.3';
+        if (bloomAmountValue) bloomAmountValue.textContent = '30%';
+        if (interpolationMethodSelect) interpolationMethodSelect.value = 'INTER_AREA';
+
+        // Clear image previews
+        if (previewImage) previewImage.src = '';
+        if (editedImage) editedImage.src = '';
+        if (imageUpload) imageUpload.value = '';
+        if (customPaletteInput) customPaletteInput.value = '';
+
+        // Disable buttons
+        applyPaletteButton.disabled = true;
+        downloadButton.disabled = true;
+
+        // Clear palette display
+        if (paletteDisplay) paletteDisplay.innerHTML = '';
         
-        // Reset sliders
-        sliders.colorCount.value = 8;
-        sliders.hueSpread.value = 0.3;
-        sliders.sSpread.value = 0.6;
-        sliders.lSpread.value = 0.6;
-        sliders.ditheringSpread.value = 0.2;
-        sliders.imageResize.value = 100;
-        sliders.interpolationMethod.value = 'INTER_AREA';
-        sliders.bloomRadius.value = 0.1;
-        sliders.bloomThreshold.value = 0.9;
-        sliders.bloomAmount.value = 0.3;
-    
-        // Update value displays
-        document.getElementById('colorCountValue').textContent = '8';
-        document.getElementById('hueSpreadValue').textContent = '30%';
-        document.getElementById('sSpreadValue').textContent = '60%';
-        document.getElementById('lSpreadValue').textContent = '60%';
-        document.getElementById('ditheringSpreadValue').textContent = '20%';
-        document.getElementById('imageResizeValue').textContent = '100%';
-        document.getElementById('bloomRadiusValue').textContent = '10%';
-        document.getElementById('bloomThresholdValue').textContent = '90%';
-        document.getElementById('bloomAmountValue').textContent = '30%';
+        // Clear current palette
+        currentPalette = [];
+        
+        updateImageButtons(false);
     }
+    
+    // Remove auto-generation on load
+    resetAll();
 
     // Call resetAll when the page loads
     resetAll();
@@ -208,13 +262,13 @@ document.addEventListener('DOMContentLoaded', function() {
         };
     }
 
-    // Update slider value displays
+    // Update slider value displays with bloom percentages
     for (let sliderId in sliders) {
         const slider = sliders[sliderId];
         const valueDisplay = document.getElementById(`${sliderId}Value`);
         if (slider.type === 'range') {
             slider.addEventListener('input', function() {
-                if (['hueSpread', 'sSpread', 'lSpread', 'ditheringSpread'].includes(sliderId)) {
+                if (['hueSpread', 'sSpread', 'lSpread', 'ditheringSpread', 'bloomRadius', 'bloomAmount', 'bloomThreshold'].includes(sliderId)) {
                     valueDisplay.textContent = `${(this.value * 100).toFixed(0)}%`;
                 } else if (sliderId === 'imageResize') {
                     valueDisplay.textContent = `${this.value}%`;
@@ -223,5 +277,58 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             });
         }
+    }
+
+    function addToImageHistory(editedSrc) {
+        if (!editedSrc || editedSrc === '' || editedSrc === 'http://127.0.0.1:5000/') {
+            return;
+        }
+
+        const previousImages = document.querySelector('.previous-images');
+        const newEntry = document.createElement('div');
+        newEntry.className = 'image-pair';
+        
+        newEntry.innerHTML = `
+            <div class="image-container">
+                <img src="${editedSrc}" alt="Previous Edit">
+                <div class="image-actions">
+                    <button class="download-history" title="Download">
+                        <i class="fas fa-download"></i>
+                    </button>
+                    <button class="view-history" title="View">
+                        <i class="fas fa-expand"></i>
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        const downloadBtn = newEntry.querySelector('.download-history');
+        const viewBtn = newEntry.querySelector('.view-history');
+
+        downloadBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const link = document.createElement('a');
+            link.download = 'palette_edit.png';
+            link.href = editedSrc;
+            link.click();
+        });
+
+        viewBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            window.open(editedSrc, '_blank');
+        });
+        
+        // Add click handler to restore this version
+        newEntry.addEventListener('click', () => {
+            document.getElementById('editedImage').src = editedSrc;
+            updateImageButtons(true);
+        });
+
+        previousImages.insertBefore(newEntry, previousImages.firstChild);
+    }
+
+    function updateImageButtons(enabled) {
+        downloadImageBtn.disabled = !enabled;
+        viewImageBtn.disabled = !enabled;
     }
 });
