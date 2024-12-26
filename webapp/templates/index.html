@@ -51,19 +51,16 @@
 
                     <!-- Image Input -->
                     <div class="control-group image-input">
-                        <h3>Image Input</h3>
-                        <input type="file" id="imageUpload" accept="image/*">
+                        <div class="upload-div">
+                            <h3>Image Input</h3>
+                            <input type="file" id="imageUpload" accept="image/*">
+                        </div>
                         <div class="preview-container">
                             <img id="previewImage" src="" alt="Preview">
                         </div>
-                    </div>
-
-                    <!-- Result Settings -->
-                    <div class="control-group result-controls">
-                        <h3>Result Settings</h3>
                         <div class="sliders-section">
                             <div class="slider-container">
-                                <label for="imageResize">Output Size (%):</label>
+                                <label for="imageResize">Resize (%):</label>
                                 <input type="range" id="imageResize" min="1" max="100" step="1" value="100">
                                 <span id="imageResizeValue">100%</span>
                             </div>
@@ -77,10 +74,6 @@
                                     <option value="INTER_LANCZOS4">Lanczos4</option>
                                 </select>
                             </div>
-                        </div>
-                        <div class="action-buttons">
-                            <button id="applyPalette" disabled>Apply Palette</button>
-                            <button id="resetAll">Reset All</button>
                         </div>
                     </div>
 
@@ -115,6 +108,10 @@
         </div>
 
         <div class="gallery-sidebar">
+            <div class="action-buttons">
+                <button id="applyPalette" disabled>Apply Style</button>
+                <button id="resetAll">Reset All</button>
+            </div>
             <h2>Output Gallery</h2>
             <div class="image-history">
                 <div class="image-pair current-image">
